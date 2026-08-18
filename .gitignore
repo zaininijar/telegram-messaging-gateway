@@ -1,0 +1,31 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Environment and sensitive data
+.env
+.env.local
+*.session
+session.json
+config.json
+
+# Go Build artifacts
+backend/tmp/
+backend/server
+backend/build-errors.log
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+
+# Node / Frontend artifacts
+node_modules/
+frontend/node_modules/
+frontend/dist/
+frontend/.env.local
+.npm
+.eslintcache
