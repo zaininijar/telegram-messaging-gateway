@@ -1,118 +1,54 @@
-# 🚀 Telegram Messaging Gateway (Go + React)
+# telegram-messaging-gateway
 
-Aplikasi **Telegram Personal Client Gateway** (mirip konsep *WhatsApp Unofficial Gateway*), di mana Anda dapat mengotomatisasi akun Telegram pribadi (User Account) untuk:
-- Mengirim pesan langsung via REST API (ke username `@...`, nomor HP `+62...`, atau User ID).
-- Auto-Reply Bot berdasarkan kata kunci (Keyword Matcher).
-- Broadcast / Bulk sender dengan jeda aman anti-spam.
-- Membaca obrolan dan pesan masuk secara real-time via WebSocket.
-- Web Dashboard modern berbasis React.js (Vite + Tailwind CSS).
+Gateway akun Telegram pribadi (MTProto user client) + dashboard web.
 
----
+Bisa kirim pesan lewat REST, auto-reply keyword, broadcast, dan stream pesan masuk via WebSocket.
 
-## 🏗️ Arsitektur & Teknologi
+## stack
 
-- **Backend**: [Golang](https://go.dev)
-  - `github.com/gotd/td`: MTProto 2.0 Native Client resmi Telegram (Userbot).
-  - `github.com/gin-gonic/gin`: REST API framework.
-  - `github.com/gorilla/websocket`: Real-time bidirectional update stream.
-  - Session file persistence (`session.json`).
-- **Frontend**: [React.js](https://react.dev) + [Vite](https://vitejs.dev) + [Tailwind CSS](https://tailwindcss.com) + [Lucide Icons](https://lucide.dev).
+- Backend: Go (`gotd/td`, Gin, WebSocket)
+- Frontend: React + Vite + Tailwind
 
----
+## credential
 
-## 🔑 1. Persiapan Kredensial Telegram (my.telegram.org)
+Ambil `API_ID` / `API_HASH` dari [my.telegram.org](https://my.telegram.org) → API development tools.
 
-Sebelum memulai, Anda membutuhkan **`API_ID`** dan **`API_HASH`**:
-1. Buka [my.telegram.org](https://my.telegram.org) dan login dengan nomor HP Telegram Anda.
-2. Klik menu **API development tools**.
-3. Buat aplikasi baru (beri nama bebas, misal: `MyGatewayApp`).
-4. Catat **`App api_id`** (angka) dan **`App api_hash`** (string).
+Bisa diisi di `.env` atau lewat UI login pertama.
 
-*(Kredensial ini bisa diisi di file `.env` atau langsung diinput lewat Web UI saat login pertama kali)*.
+## jalanin
 
----
+Sekaligus:
 
-## ⚡ 2. Cara Menjalankan
-
-### Opsi A: Jalankan Sekaligus (Rekomendasi)
 ```bash
 ./start.sh
 ```
 
-### Opsi B: Jalankan Terpisah
+Atau terpisah:
 
-**1. Backend (Go - dengan Air Live Reload)**
 ```bash
-cd backend
-air
-# Atau jika tanpa air: go run ./cmd/server
-# Server berjalan di http://localhost:8080
+# backend
+cd backend && air   # atau: go run ./cmd/server
+# http://localhost:8080
+
+# frontend
+cd frontend && npm run dev
+# http://localhost:5173
 ```
 
-**2. Frontend (React)**
-```bash
-cd frontend
-npm run dev
-# Dashboard berjalan di http://localhost:5173
-```
+Login di UI: API_ID/HASH → nomor → OTP → 2FA (kalau ada). Session tersimpan di `backend/session.json`.
 
----
+## API singkat
 
-## 📱 3. Alur Login di Web UI
-
-1. Buka browser di **`http://localhost:5173`**.
-2. Masukkan `API_ID` dan `API_HASH` Telegram Anda.
-3. Masukkan nomor HP (format internasional, contoh: `+6281234567890`).
-4. Masukkan kode OTP 5-digit yang masuk ke aplikasi Telegram Anda.
-5. Masukkan password 2FA (jika akun mengaktifkan Two-Step Verification).
-6. Selesai! Sesi Anda tersimpan di `backend/session.json` dan tidak perlu login ulang saat restart.
-
----
-
-## 📡 4. Dokumentasi REST API (Untuk Integrasi Eksternal)
-
-Anda dapat menghubungkan backend Go ini ke aplikasi backend Anda yang lain (Laravel, Node.js, Python, CRM, dsb):
-
-### **Kirim Pesan (Send Message)**
-```http
-POST /api/send-message
-Content-Type: application/json
-```
-**Request Body:**
-```json
-{
-  "to": "@username_tujuan",
-  "message": "Halo! Pesanan #1234 telah kami kirimkan."
-}
-```
-*Target `to` bisa berupa `@username`, nomor telepon `+62812...`, atau User ID.*
-
-#### Contoh cURL:
 ```bash
 curl -X POST http://localhost:8080/api/send-message \
   -H "Content-Type: application/json" \
-  -d '{"to": "@target_user", "message": "Pesan otomatis dari API"}'
+  -d '{"to":"@username","message":"halo"}'
 ```
 
-### **Cek Status Akun**
-```http
-GET /api/status
-```
+- `GET /api/status`
+- `GET /api/dialogs?limit=30`
+- `ws://localhost:8080/api/ws`
 
-### **Daftar Dialog / Obrolan Terakhir**
-```http
-GET /api/dialogs?limit=30
-```
+## catatan
 
-### **WebSocket Real-time Events**
-```
-ws://localhost:8080/api/ws
-```
-*Menerima event `new_message` dan `status_change` secara real-time.*
-
----
-
-## 🛡️ Tips Anti-Spam / Anti-Banned Telegram
-
-1. **Jeda Waktu**: Gunakan delay minimal 3-5 detik antar pesan saat broadcast ke orang yang belum menyimpan kontak Anda.
-2. **SpamBot Protection**: Hindari mengirim link mencurigakan secara massal ke akun baru.
+Jeda broadcast (mis. 3–5 detik). Jangan spam link ke kontak baru — mudah kena limit Telegram.
